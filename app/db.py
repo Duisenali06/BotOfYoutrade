@@ -6,8 +6,12 @@ from app.config import settings
 from app.models import Base
 
 
+DATABASE_URL = settings.DATABASE_URL.replace(
+    "postgresql://", "postgresql+asyncpg://", 1
+)
+
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    DATABASE_URL,
     echo=False,
     pool_pre_ping=True,
     pool_size=10,
