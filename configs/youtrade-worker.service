@@ -1,0 +1,17 @@
+[Unit]
+Description=YouTrade Retention Worker
+After=network.target postgresql.service youtrade-bot.service
+
+[Service]
+Type=simple
+User=youtrade
+Group=youtrade
+WorkingDirectory=/opt/youtrade-bot
+Environment="PATH=/opt/youtrade-bot/venv/bin"
+EnvironmentFile=/opt/youtrade-bot/.env
+ExecStart=/opt/youtrade-bot/venv/bin/python -m app.worker
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

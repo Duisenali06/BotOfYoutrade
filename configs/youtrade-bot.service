@@ -1,0 +1,17 @@
+[Unit]
+Description=YouTrade Telegram Bot
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=youtrade
+Group=youtrade
+WorkingDirectory=/opt/youtrade-bot
+Environment="PATH=/opt/youtrade-bot/venv/bin"
+EnvironmentFile=/opt/youtrade-bot/.env
+ExecStart=/opt/youtrade-bot/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
