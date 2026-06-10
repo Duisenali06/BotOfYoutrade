@@ -34,6 +34,47 @@ from app.ai import ask_claude
 from app.retention import COHORT_FILTERS
 
 
+# ─── Антифлуд: защита от петли и спама ─────────────────────────────────────────
+import time
+
+# Последние обработанные message id (чтобы не отвечать дважды на одно сообщение)
+_seen_message_ids: dict[str, float] = {}
+# Время последнего ответа каждому контакту (кулдаун)
+_last_reply_at: dict[str, float] = {}
+
+_DEDUP_TTL = 300          # сколько секунд помним message id
+_REPLY_COOLDOWN = 5.0     # минимум секунд между ответами одному контакту
+
+
+def _cleanup_seen():
+    """Чистим устаревшие записи чтобы словарь не рос бесконечно."""
+    now = time.time()
+    for mid, ts in list(_seen_message_ids.items()):
+        if now - ts > _DEDUP_TTL:
+            del _seen_message_ids[mid]
+
+
+def _is_duplicate(message_id: str) -> bool:
+    """True если это сообщение мы уже обрабатывали."""
+    if not message_id:
+        return False
+    _cleanup_seen()
+    if message_id in _seen_message_ids:
+        return True
+    _seen_message_ids[message_id] = time.time()
+    return False
+
+
+def _on_cooldown(contact_id: str) -> bool:
+    """True если этому контакту мы только что отвечали (защита от потока)."""
+    now = time.time()
+    last = _last_reply_at.get(contact_id, 0)
+    if now - last < _REPLY_COOLDOWN:
+        return True
+    _last_reply_at[contact_id] = now
+    return False
+
+
 # ─── Клиент Botcorp API ────────────────────────────────────────────────────────
 
 async def _botcorp_request(method: str, endpoint: str, json: dict) -> dict:
@@ -279,10 +320,21 @@ async def handle_wa_message(payload: dict):
         print(f"[whatsapp] пропускаем исходящее сообщение от бота")
         return
 
+    # Антифлуд №1: не обрабатываем одно и то же сообщение дважды
+    message_id = msg_data.get("channelMessageId") or msg_data.get("_id") or ""
+    if _is_duplicate(message_id):
+        print(f"[whatsapp] пропускаем дубликат message_id={message_id}")
+        return
+
     text = str(text).strip()
 
     if not contact_id or not text:
         print(f"[whatsapp] пропускаем: нет contact_id или текста. payload={payload}")
+        return
+
+    # Антифлуд №2: кулдаун на ответы одному контакту (защита от потока)
+    if _on_cooldown(contact_id):
+        print(f"[whatsapp] кулдаун: слишком частые сообщения от {contact_id}, пропускаем")
         return
 
     # Нормализуем номер телефона (убираем + и пробелы)
