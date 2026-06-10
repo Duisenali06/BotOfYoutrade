@@ -238,27 +238,40 @@ async def handle_wa_message(payload: dict):
     """
     print(f"[whatsapp] incoming payload: {payload}")
 
-    # Извлекаем данные — Botcorp может слать в разных форматах
+    # Botcorp шлёт данные внутри data.messageData
+    data = payload.get("data") or {}
+    msg_data = data.get("messageData") or {}
+    contact_data = data.get("contactData") or {}
+
+    # Извлекаем contact_id
     contact_id = (
-        payload.get("contactId")
+        msg_data.get("contactId")
+        or payload.get("contactId")
         or payload.get("contact_id")
         or payload.get("id")
         or ""
     )
+
+    # Извлекаем телефон
     phone = (
-        payload.get("phone")
+        contact_data.get("phone")
+        or payload.get("phone")
         or payload.get("from")
         or ""
     )
 
-    # Текст сообщения
-    msg = payload.get("message") or {}
-    if isinstance(msg, dict):
-        text = msg.get("text") or payload.get("text") or ""
-        msg_type = msg.get("type", "text")
-    else:
-        text = payload.get("text") or ""
-        msg_type = "text"
+    # Извлекаем текст сообщения
+    text = (
+        msg_data.get("text")
+        or payload.get("text")
+        or ""
+    )
+    msg_type = msg_data.get("type", "text")
+
+    # Пропускаем если это исходящее сообщение от бота
+    if msg_data.get("sender") is True or msg_data.get("bot") is True:
+        print(f"[whatsapp] пропускаем исходящее сообщение от бота")
+        return
 
     text = str(text).strip()
 
