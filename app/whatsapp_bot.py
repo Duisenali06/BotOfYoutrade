@@ -268,7 +268,13 @@ async def handle_wa_message(payload: dict):
     )
     msg_type = msg_data.get("type", "text")
 
-    # Пропускаем если это исходящее сообщение от бота
+    # Обрабатываем ТОЛЬКО входящие сообщения от пользователя (route == inbox).
+    # Исходящие сообщения бота (outbox / sender / bot) пропускаем —
+    # иначе бот отвечает сам себе и зацикливается.
+    route = msg_data.get("route", "")
+    if route != "inbox":
+        print(f"[whatsapp] пропускаем не-inbox сообщение (route={route})")
+        return
     if msg_data.get("sender") is True or msg_data.get("bot") is True:
         print(f"[whatsapp] пропускаем исходящее сообщение от бота")
         return
