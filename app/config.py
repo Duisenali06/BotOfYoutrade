@@ -21,7 +21,6 @@ class Settings(BaseSettings):
     # Botcorp WhatsApp API
     BOTCORP_TOKEN: str = ""
     BOTCORP_CHANNEL_ID: str = ""
-    BOTCORP_WORKSPACE_ID: str = ""
     BOTCORP_API_URL: str = "https://chat.botcorp.io/api/apiFromWorkspace"
 
     @property

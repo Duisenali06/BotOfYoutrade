@@ -42,7 +42,6 @@ async def _botcorp_request(method: str, endpoint: str, json: dict) -> dict:
     headers = {
         "Authorization": f"Bearer {settings.BOTCORP_TOKEN}",
         "Content-Type": "application/json",
-        "apiKey": settings.BOTCORP_TOKEN,
     }
     async with httpx.AsyncClient(timeout=15.0) as client:
         if method == "POST":
@@ -66,7 +65,6 @@ async def send_text_wa(contact_id: str, text: str) -> bool:
             "contactId": contact_id,
             "type": "text",
             "text": text,
-            "workspaceId": settings.BOTCORP_WORKSPACE_ID,
         })
         print(f"[whatsapp] send_text result: {result}")
         return True
