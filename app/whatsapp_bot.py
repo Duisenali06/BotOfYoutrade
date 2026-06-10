@@ -40,8 +40,9 @@ async def _botcorp_request(method: str, endpoint: str, json: dict) -> dict:
     """Универсальный запрос к Botcorp API."""
     url = f"{settings.BOTCORP_API_URL}/{endpoint}"
     headers = {
-        "Authorization": settings.BOTCORP_TOKEN,
+        "Authorization": f"Bearer {settings.BOTCORP_TOKEN}",
         "Content-Type": "application/json",
+        "apiKey": settings.BOTCORP_TOKEN,
     }
     async with httpx.AsyncClient(timeout=15.0) as client:
         if method == "POST":
