@@ -66,6 +66,7 @@ async def send_text_wa(contact_id: str, text: str) -> bool:
             "contactId": contact_id,
             "type": "text",
             "text": text,
+            "workspaceId": settings.BOTCORP_WORKSPACE_ID,
         })
         print(f"[whatsapp] send_text result: {result}")
         return True
