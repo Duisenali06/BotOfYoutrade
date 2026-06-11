@@ -241,7 +241,7 @@ async def handle_callback(update: Update):
 
 
 async def handle_text(update: Update):
-    """Обработка свободного текста — через Claude (Аружан или Алия по статусу)."""
+    """Обработка свободного текста — через Claude (Аружан)."""
     if not update.message or not update.message.text:
         return
     tg_user = update.message.from_user

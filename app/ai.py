@@ -1,27 +1,25 @@
 """
 Claude API — для свободных ответов на вопросы.
-Переключается между Аружан (sales) и Алией (support) по флагу user.purchased.
+Единственный персонаж — Аружан. Контекст (купил/не купил) добавляется в промпт.
 """
 import anthropic
 from app.config import settings
 from app.aruzhan_prompt import ARUZHAN_SYSTEM_PROMPT
-from app.aliya_prompt import ALIYA_SYSTEM_PROMPT
 
 
 client = anthropic.AsyncAnthropic(api_key=settings.CLAUDE_API_KEY)
 
 
 def build_system_prompt(context: dict) -> str:
-    """Выбираем промпт по статусу юзера и добавляем контекст."""
+    """Промпт Аружан + контекст по статусу юзера."""
+    base = ARUZHAN_SYSTEM_PROMPT
     purchased = context.get("purchased", False)
 
     if purchased:
-        base = ALIYA_SYSTEM_PROMPT
         context_note = "\n\n[КОНТЕКСТ: юзер уже купил челлендж, режим support]"
         if context.get("current_step") is not None:
             context_note += f"\n[Текущий шаг онбординга: {context['current_step']} из 8]"
     else:
-        base = ARUZHAN_SYSTEM_PROMPT
         context_note = "\n\n[КОНТЕКСТ: юзер ещё не купил, режим sales]"
         if context.get("welcome_completed"):
             context_note += "\n[Welcome-флоу отправлен, клиент видел инфу о компании и топ выплат]"

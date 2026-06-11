@@ -1,4 +1,4 @@
-# YouTrade Bot — Алия
+# YouTrade Bot — Аружан
 
 Telegram бот-проводник для онбординга новых трейдеров YouTrade Prop.
 
